@@ -1,0 +1,425 @@
+/* File: src/App.css */
+
+/* Variables */
+:root {
+  --bg-color: #111;
+  --accent-color: #ff0080;
+  --text-color: #eee;
+  --header-height: 60px;
+  --secondary-bg: #222;
+  --rank1-bg: gold;
+  --rank2-bg: silver;
+  --rank3-bg: #cd7f32;
+}
+
+/* Global Styles */
+body {
+  margin: 0;
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  /* Always show horizontal scrollbar at bottom */
+  overflow-x: scroll;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* FIXED HEADER */
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--header-height);
+  background: #000;
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  z-index: 1000;
+}
+
+.header-left {
+  flex: 0 0 auto;
+}
+
+.header-logo {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--accent-color);
+  text-transform: uppercase;
+}
+
+.header-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.search-input {
+  width: 260px;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #444;
+  background: #1e1e1e;
+  color: #fff;
+  outline: none;
+}
+
+.header-right {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.header-btn {
+  background: var(--accent-color);
+  border: none;
+  padding: 0.3rem 0.6rem;
+  color: #fff;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: 0.2s;
+  font-size: 0.9rem;
+}
+
+.header-btn:hover {
+  filter: brightness(1.2);
+}
+
+/* PAGE CONTENT */
+.page-content {
+  margin-top: var(--header-height);
+  padding: 1rem;
+  /* Global minimum width for horizontal scrolling */
+  min-width: 1150px;
+}
+
+/* RECOMMENDATIONS SECTION */
+.recommendations-section {
+  background: var(--secondary-bg);
+  border-radius: 4px;
+  padding: 0.5rem 0.5rem 1.5rem 0.5rem;  /* Extra bottom padding added */
+  margin-bottom: 1rem;
+  overflow: visible; /* No scrollbar */
+}
+
+.recommendations-header {
+  margin: 0;
+  margin-bottom: 0.3rem;
+  text-transform: uppercase;
+  color: var(--accent-color);
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.rec-block {
+  margin-bottom: 0.3rem;
+}
+
+/* Carousel for Recommendations: Display all items without a scrollbar */
+.rec-carousel {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  flex-wrap: wrap; /* Allow wrapping so all items are visible */
+}
+
+.rec-carousel-window {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Recommendation Card: Constant Size */
+.rec-movie-card {
+  width: 140px;
+  height: 260px;  /* Fixed height for the card */
+  background: var(--secondary-bg);
+  border-radius: 4px;
+  text-align: center;
+  padding: 0.3rem;
+  flex-shrink: 0;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.rec-image {
+  width: 140px;
+  height: 210px;  /* Adjusted to fit the card */
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #333;
+  margin-bottom: 0.2rem;
+}
+
+.rec-title {
+  margin: 0.2rem 0;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rec-movie-card .star-rating {
+  margin-top: 0.2rem;
+}
+
+.rec-rank {
+  position: absolute;
+  top: 0.3rem;
+  left: 0.3rem;
+  background: #333;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: #fff;
+}
+
+/* Special Rank Backgrounds for Rec Cards */
+.rank-one {
+  background: var(--rank1-bg);
+}
+
+.rank-two {
+  background: var(--rank2-bg);
+}
+
+.rank-three {
+  background: var(--rank3-bg);
+}
+
+/* MAIN LAYOUT */
+.main-layout {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: nowrap;
+  min-width: 1150px;
+}
+
+/* Movies Grid Pane */
+.movies-grid-pane {
+  overflow-y: auto;
+  overflow-x: auto;
+  background: var(--secondary-bg);
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+.movies-grid-pane.with-rated {
+  width: calc(100% - 300px - 1rem);
+}
+
+.movies-grid-pane.full-width {
+  width: 100%;
+}
+
+/* Grid Container with fixed natural width */
+.movies-grid-container {
+  overflow-x: auto;
+  width: max-content;
+}
+
+.movies-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.movies-grid-pane.with-rated .movies-grid {
+  grid-template-columns: repeat(4, 200px);
+}
+
+.movies-grid-pane.full-width .movies-grid {
+  grid-template-columns: repeat(5, 200px);
+}
+
+/* Movie Tile */
+.movie-card {
+  background: #333;
+  border-radius: 4px;
+  text-align: center;
+  padding: 0.5rem;
+  width: 200px;
+  border: 2px solid #444;
+  transition: transform 0.2s;
+}
+
+.movie-card:hover {
+  transform: scale(1.02);
+}
+
+.movie-image {
+  width: 200px;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #555;
+  margin-bottom: 0.4rem;
+}
+
+.movie-title {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* Rated Panel (Sticky) */
+.rated-panel {
+  position: sticky;
+  right: 0;
+  top: calc(var(--header-height) + 1rem);
+  width: 300px;
+  overflow-y: auto;
+  background: var(--secondary-bg);
+  border-radius: 4px;
+  padding: 1rem;
+  height: calc(100vh - var(--header-height) - 2rem);
+}
+
+.rated-panel h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--accent-color);
+}
+
+.rated-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rated-item {
+  background: #333;
+  border-radius: 4px;
+  padding: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #444;
+}
+
+.rated-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rated-image {
+  width: 40px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #444;
+}
+
+.remove-btn {
+  background: #ff3333;
+  border: none;
+  color: #fff;
+  font-size: 1.1rem;
+  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-btn:hover {
+  background: #ff6666;
+}
+
+/* STAR RATING (centered) */
+.star-rating {
+  display: flex;
+  justify-content: center;
+  gap: 0.2rem;
+}
+
+.star {
+  font-size: 1.2rem;
+  color: #777;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.star.filled {
+  color: var(--accent-color);
+}
+
+.no-results {
+  color: #bbb;
+  text-align: center;
+}
+
+/* Custom Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #222;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border-radius: 4px;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-color) #222;
+}
+
+/* Spinner for loading state */
+.spinner {
+  margin: 1rem auto;
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 0, 128, 0.3);
+  border-top: 4px solid var(--accent-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Loading container styling: GIFs to left and right of progress bar */
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.loading-gif {
+  width: 150px;  /* slightly bigger */
+  height: 150px;
+  object-fit: cover;
+  border: 2px solid var(--accent-color);
+  border-radius: 8px;
+}
+
+/* Loading Progress Bar */
+.progress-container {
+  width: 300px;
+  height: 10px;
+  background-color: #444;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: var(--accent-color);
+  width: 0%;
+  transition: width 0.1s linear;
+}

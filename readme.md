@@ -1,12 +1,13 @@
 # Screen Genius
-# ![Project Header](media/logo.png)
 > *A Comprehensive Recommender System Using Netflix Prize Data*
+
+![Project Header](media/logo.png)
 
 ---
 
 ## Table of Contents
 1. [Introduction](#introduction)  
-2. [Project Overview](#project-overview)  
+2. [Toy Models](#toy-models)  
    - [SVD Model](#svd-model)  
    - [NCF Model](#ncf-model)  
    - [Two-Tower Model](#two-tower-model)  
@@ -23,191 +24,212 @@
 ---
 
 ## Introduction
-This project presents a **comprehensive recommender system** based on the [Netflix Prize data](https://www.kaggle.com/datasets/netflix-inc/netflix-prize-data). We explore three popular approaches to recommendation systems: **Singular Value Decomposition (SVD)**, **Neural Collaborative Filtering (NCF)**, and a **Two-Tower architecture**.
+This project presents a **comprehensive recommender system** based on the [Netflix Prize data](https://www.kaggle.com/datasets/netflix-inc/netflix-prize-data). We initially explore three popular approaches to recommendation systems—**Singular Value Decomposition (SVD)**, **Neural Collaborative Filtering (NCF)**, and a **Two-Tower architecture**—as “toy models.”
 
-To accompany these models, we have included a set of data visualizations and exploratory analyses to better understand user behavior and rating patterns. A simple frontend application is also provided to demonstrate how these models can be integrated into a user-facing product.
+Building on these, we have developed a **deployed web application** available at https://recsys-41460.web.app/. The user can rate movies and click "Submit" to get personalized recommendations. This process may take some time on the deployed version (as it runs on a CPU on Google Cloud Run), but can run very quickly.  On an M1 Mac, for example, results are generated in about 15 seconds.
+
+The final production model uses a **two-stage Two-Tower approach** to handle cold-start scenarios efficiently:
+1. **Model 1**: Produces a 16-dimensional vector for each of the 970 popular movies, using semantic information from the movie title and the movie’s release date.
+![Model 1](media/model1.png)
+2. **Model 2**: Takes user ratings for up to 16 movies and constructs a 16×16 2D array by multiplying each selected movie’s 16D vector by the user’s adjusted rating for that movie. This 2D array is then fed into a CNN-based Two-Tower model that outputs a user embedding.
+![Model 2](media/model2.png)
+
+If a user rates more than 16 movies, 16 are randomly chosen. If fewer than 16 are rated, the blank spaces are filled with zeros.  This ensures that user side input to model 2 is always shape 16x16.
+
+Once the user embedding is generated, it is used to predict scores for all 970 movies. The system responds with the top 10 highest predicted ratings and the 10 lowest predicted ratings, displayed to the user via a **Vite + React** frontend.
+
+We provide the entire pipeline—from data visualization and exploration, to model building and training, to deployment in a Docker container on Google Cloud Run with a **FastAPI** backend, to a **Firebase**-hosted frontend.
 
 ---
 
-## Project Overview
+## Toy Models
 
 ### SVD Model
-- **Description**: Implements a matrix-factorization approach using the Surprise library (or standard Python ML libraries).  
-- **Notebook**: [SVD.ipynb](path/to/your/SVD.ipynb)  
-- **Features**:  
-  - Learns latent factors from user-item interactions.  
-  - Scalable solution for large rating matrices.  
-  - Supports user-based and item-based predictions.  
+- **Description**: Implements a matrix-factorization approach using the Surprise library.
+- **Notebook**: [SVD.ipynb](toy_models/svd/svd.ipynb)
+- **Features**:
+  - Learns latent factors from user-item interactions.
+  - Scalable solution for large rating matrices.
+  - Supports user-based and item-based predictions.
 
 ### NCF Model
-- **Description**: Utilizes a deep learning paradigm for collaborative filtering, combining linear and non-linear transformations to capture complex interactions.  
-- **Notebook**: [NCF.ipynb](path/to/your/NCF.ipynb)  
-- **Features**:  
-  - End-to-end learning with embeddings.  
-  - Easy to incorporate additional features like user demographics or item metadata.  
-  - Often outperforms classical MF approaches on complex datasets.  
+- **Description**: Implements an NCF model using the LibRecommender library.
+- **Notebook**: [NCF.ipynb](toy_models/ncf/ncf.ipynb)
+- **Features**:
+  - Best Performance of the 3 toy models.
+  - Easy to incorporate additional features like user demographics or item metadata.
 
 ### Two-Tower Model
-- **Description**: A neural network approach that learns separate embeddings for users and items (two towers) before combining them through a similarity measure (e.g., dot product).  
-- **Notebook**: [TwoTower.ipynb](path/to/your/TwoTower.ipynb)  
-- **Features**:  
-  - Highly scalable for large-scale recommendations.  
-  - Allows flexible training objectives (e.g., maximizing dot-product similarity for relevant user-item pairs).  
-  - Easy to deploy for real-time recommendations.  
+- **Description**: A neural network approach that learns separate embeddings for users and items (two towers) before combining them through a similarity measure (dot product).
+- **Notebook**: [TwoTower.ipynb](toy_models/two_tower/two_towers.ipynb)
+- **Features**:
+  - Highly scalable for large-scale recommendations.
+  - Allows flexible training objectives (e.g., maximizing dot-product similarity for relevant user-item pairs).
+  - Easy to deploy for real-time recommendations.
 
 ---
 
 ## Data
-- **Source**: [Netflix Prize data](https://www.kaggle.com/datasets/netflix-inc/netflix-prize-data)  
-- **Description**: The dataset contains user ratings of various movies. It consists of several million ratings, which makes it ideal for testing the performance and scalability of recommender systems.  
-- **Usage**:  
-  - **Ensure** you have downloaded and extracted the dataset locally or in your Google Drive (if running on Colab).  
-  - **Path updates**: Modify the data path in the notebooks to point to the directory where you’ve stored the files.  
+- **Source**: [Netflix Prize data](https://www.kaggle.com/datasets/netflix-inc/netflix-prize-data)
+- **Description**: The dataset contains user ratings for various movies. It consists of several million ratings, making it ideal for testing the performance and scalability of recommender systems.
+- **Usage**:
+  - **Ensure** you have downloaded and extracted the dataset locally or in your Google Drive (if running on Colab).
+  - **Path updates**: Modify the data paths in the notebooks to point to the directory where you’ve stored the files.
 
 *Note*: The dataset usage must comply with its [license and terms](https://www.kaggle.com/datasets/netflix-inc/netflix-prize-data/rules).
 
 ---
 
 ## Visualization Notebook
-- **Notebook**: [Visualization.ipynb](path/to/your/Visualization.ipynb)  
-- **Features**:  
-  - Exploratory Data Analysis (EDA) for user rating distributions, movie popularity trends, etc.  
-  - Visualization of metrics like coverage, diversity, and basic rating statistics.  
-  - Performance metrics visualization across the SVD, NCF, and Two-Tower models.  
+- **Notebook**: [Visualization.ipynb](data_visualization.ipynb)
+- **Features**:
+  - Exploratory Data Analysis (EDA) for user rating distributions, movie popularity trends, etc.
 
 ---
 
 ## Frontend
-- **Description**: A simple frontend application (e.g., Streamlit, Flask, or React) that showcases how to integrate the models into a user-facing product.  
-- **Features**:  
-  - Users can search or browse movies.  
-  - The recommender provides personalized or similar-item recommendations.  
-- **Usage**:  
-  - Run the frontend code (for example, using Streamlit):  
-
-        streamlit run app.py
-
-    or (for Flask):  
-
-        flask run
-
-  - Access it locally or via a URL (if deployed) to interact with the system.  
+- **Description**: A **Vite + React** frontend that allows users to rate movies and submit their ratings. The system then returns recommendations based on a CNN-based Two-Tower model.
+- **Features**:
+  - Users can browse or search for movies from the set of 970 popular titles.
+  - When users click "Submit," their ratings are sent to the FastAPI backend for inference.
+  - The backend responds with the **top 10 highest** predicted ratings and the **10 lowest** predicted ratings for that user.
+  - Results are displayed on the frontend.
+- **Deployment**:
+  - Hosted on **Firebase** at https://recsys-41460.web.app/.
+  - Model inference is performed on a **CPU on Google Cloud Run**, so the recommendation process can take up to a 90 seconds.  
+  - On an **M1 Mac**, the predictions typically take around 15 seconds.
 
 ---
 
 ## Setup and Installation
+
 1. **Clone the Repository**  
-   
-       git clone https://github.com/yourusername/recommender-system.git
-       cd recommender-system
+   git clone https://github.com/yourusername/recommender-system.git  
+   cd recommender-system
 
 2. **Install Dependencies**  
-   - **Option A**: Using `pip`  
-         
-         pip install -r requirements.txt
+   - **Option A**: Using pip  
+     pip install -r requirements.txt
 
-   - **Option B**: Using `conda`  
-         
-         conda create -n recsys_env python=3.8
-         conda activate recsys_env
-         pip install -r requirements.txt
+   - **Option B**: Using conda  
+     conda create -n recsys_env python=3.8  
+     conda activate recsys_env  
+     pip install -r requirements.txt
 
 3. **Acquire Dataset**  
-   - Download the data from [Kaggle](https://www.kaggle.com/datasets/netflix-inc/netflix-prize-data).  
+   - Download the Netflix Prize data from https://www.kaggle.com/datasets/netflix-inc/netflix-prize-data.
    - Place the extracted files in a `data` folder or update paths in the notebooks accordingly.
 
 4. **Google Colab** (Optional)  
-   - Upload the notebook(s) to your Google Drive or open directly from GitHub.  
-   - Make sure to mount your Drive:  
-
-         from google.colab import drive
-         drive.mount('/content/drive')
+   - Upload the notebook(s) to your Google Drive or open directly from GitHub.
+   - Make sure to mount your Drive:
+     from google.colab import drive  
+     drive.mount('/content/drive')
 
    - Update file paths in the notebooks to reference the dataset in your Drive.
 
 ---
 
 ## Usage
-1. **Run Notebooks**  
-   Open each notebook (SVD, NCF, Two-Tower, Visualization) and run cell by cell.  
-   - Ensure that the required Python libraries (listed in `requirements.txt`) are installed.  
-   - Modify any paths or hyperparameters as needed.
 
-2. **Training & Evaluation**  
-   - In each model notebook, you’ll find sections for **data loading**, **model training**, **hyperparameter tuning**, and **evaluation**.  
-   - Experiment with different hyperparameters to observe performance changes.
+1. **Run the Toy Model Notebooks**  
+   - Open each notebook (SVD, NCF, Two-Tower) inside the `toy_models` folder and run cell by cell.
+   - Ensure that the required Python libraries (listed in `requirements.txt`) are installed.
 
-3. **Launch Frontend**  
-   - Navigate to the `frontend` directory (or wherever the app code is located).  
-   - Run the frontend:  
+2. **Data Visualization**  
+   - Open the visualization notebook (e.g., `data_visualization.ipynb` in the root directory).
+   - Run the analysis cells to explore data distributions, user ratings, and more.
 
-         streamlit run app.py
+3. **Build and Train the Production Model**  
+   - Inside the `src` folder:
+     - get_embeddings.ipynb: Trains the first Two-Tower model to generate 16D movie embeddings (based on title semantics and release date).
+     - build_model.ipynb: Uses the saved 16D movie embeddings and constructs the CNN-based user tower. This notebook outputs the final model file (.h5 or similar) used in deployment.
 
-     or  
+4. **Docker & FastAPI Deployment**  
+   - The `docker` folder contains:
+     - Dockerfile: Defines the container environment.
+     - main.py: FastAPI application serving the model.
+   - To build and run locally:
+     cd docker  
+     docker build -t your_docker_image_name .  
+     docker run -p 8000:8000 your_docker_image_name
 
-         flask run
+   - Deployed on **Google Cloud Run**. The containerized FastAPI app receives user ratings, runs the model inference, and returns the recommendations.
 
-   - Access the local URL to interact with the recommendation system.
+5. **Frontend**  
+   - Located in the `frontend` folder.
+   - Built with **Vite + React**.  
+   - Deployed to **Firebase** at: https://recsys-41460.web.app/.
+   - When the user rates movies and clicks "Submit," it sends a POST request to the FastAPI endpoint.  
+   - The server returns:
+     - Top 10 highest predicted ratings.
+     - 10 lowest predicted ratings.
+   - The frontend displays these results to the user.
+
+6. **Using the Web App**  
+   - Go to https://recsys-41460.web.app/.
+   - Rate some movies from the list (up to 16 will be used in creating the user embedding).
+   - Click “Submit.”
+   - Wait for the model to process (may take up to a minute on CPU).  
+   - View the recommended highest- and lowest-rated movies.
 
 ---
 
 ## Project Structure
-```
-recommender-system/
-│
-├── data/
-│   └── ... (Netflix Prize data files)
-│
-├── svd/
-│   └── SVD.ipynb
-│
-├── ncf/
-│   └── NCF.ipynb
-│
-├── two_tower/
-│   └── TwoTower.ipynb
-│
-├── visualization/
-│   └── Visualization.ipynb
-│
-├── frontend/
-│   ├── app.py  (or main.py, if using Flask/Streamlit)
-│   └── ...     (other frontend-related files)
-│
-├── requirements.txt
-├── README.md
-└── LICENSE
-```
+Below is a representative layout of the project’s files and directories:
 
-- **data/**: Folder for the Netflix data.  
-- **svd/**: Contains the notebook for the SVD model.  
-- **ncf/**: Contains the notebook for the NCF model.  
-- **two_tower/**: Contains the notebook for the Two-Tower model.  
-- **visualization/**: Notebook for exploratory data analysis and plotting.  
-- **frontend/**: Frontend application files.  
-- **requirements.txt**: Python dependencies.  
-- **LICENSE**: Project license.  
+    recommender-system/
+    │
+    ├── data/
+    │   └── ... (Netflix Prize data files)
+    │
+    ├── toy_models/
+    │   ├── SVD.ipynb
+    │   ├── NCF.ipynb
+    │   └── TwoTower.ipynb
+    │
+    ├── src/
+    │   ├── get_embeddings.ipynb  (generates 16D movie vectors)
+    │   └── build_model.ipynb     (builds CNN-based Two-Tower model)
+    │
+    ├── docker/
+    │   ├── Dockerfile  (for the FastAPI container)
+    │   └── main.py     (FastAPI API code)
+    │
+    ├── frontend/
+    │   ├── ...         (Vite + React files)
+    │   └── ...
+    │
+    ├── data_visualization.ipynb  (root-level EDA and visualization file)
+    ├── requirements.txt
+    ├── README.md
+    └── LICENSE
+
+- **data/**: Folder for the Netflix Prize data.
+- **toy_models/**: Contains the “toy” notebooks for SVD, NCF, and a simple Two-Tower model.
+- **src/**: Contains the notebooks for generating movie embeddings (get_embeddings.ipynb) and building the final CNN-based Two-Tower model (build_model.ipynb).
+- **docker/**: Holds the Dockerfile and main.py (FastAPI API) for containerization and deployment on Google Cloud Run.
+- **frontend/**: Contains the Vite + React code deployed to Firebase.
+- **data_visualization.ipynb**: A root-level notebook for data exploration and plotting.
+- **requirements.txt**: Python dependencies.
+- **LICENSE**: Project license.
 
 ---
 
 ## Contributing
-Contributions to this project are welcome! Whether it’s improving documentation, adding new features, or fixing bugs:  
+Contributions to this project are welcome! Whether it’s improving documentation, adding new features, or fixing bugs:
 
-1. Fork the repository:  
+1. Fork the repository:
+   git clone https://github.com/yourusername/recommender-system.git
 
-       git clone https://github.com/yourusername/recommender-system.git
+2. Create a new branch:
+   git checkout -b feature/new-feature
 
-2. Create a new branch:  
+3. Commit your changes:
+   git commit -m "Add a new feature"
 
-       git checkout -b feature/new-feature
-
-3. Commit your changes:  
-
-       git commit -m "Add a new feature"
-
-4. Push to the branch:  
-
-       git push origin feature/new-feature
+4. Push to the branch:
+   git push origin feature/new-feature
 
 5. Create a Pull Request in this repository.
 
@@ -219,7 +241,7 @@ This project is licensed under the [MIT License](LICENSE). Please review the lic
 ---
 
 ## Contact
-For questions, feedback, or collaboration, please reach out via [email@example.com](mailto:email@example.com) or open an [issue](https://github.com/yourusername/recommender-system/issues) on GitHub.
+For questions, feedback, or collaboration, please reach out via [nicholasallison341@gmail.com](mailto:nicholasallison341@gmail.com) or open an [issue](https://github.com/nick-allison/RecSys/issues) on GitHub.
 
 ---
 

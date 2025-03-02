@@ -1,4 +1,5 @@
-# ![Project Header](https://via.placeholder.com/1200x300.png?text=Your+Project+Header+Image+Here)
+# Screen Genius
+# ![Project Header](media/logo.png)
 > *A Comprehensive Recommender System Using Netflix Prize Data*
 
 ---

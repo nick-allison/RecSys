@@ -88,130 +88,130 @@ We provide the entire pipeline—from data visualization and exploration, to mod
 ---
 
 ## Frontend
-- **Description**: A **Vite + React** frontend that allows users to rate movies and submit their ratings. The system then returns recommendations based on a CNN-based Two-Tower model.
-- **Features**:
-  - Users can browse or search for movies from the set of 970 popular titles.
-  - When users click "Submit," their ratings are sent to the FastAPI backend for inference.
-  - The backend responds with the **top 10 highest** predicted ratings and the **10 lowest** predicted ratings for that user.
-  - Results are displayed on the frontend.
+
+- **Description**: A **Vite + React** application enabling users to:
+  - Search for movies from a curated set of ~970 popular titles (with posters).
+  - Rate any movie on a 5-star scale directly in the interface.
+  - Submit ratings to a backend API (FastAPI, either locally or on the cloud).
+  - Receive **top 10** highest-scored recommendations and **10 lowest** scored items.
+
 - **Deployment**:
-  - Hosted on **Firebase** at https://recsys-41460.web.app/.
-  - Model inference is performed on a **CPU on Google Cloud Run**, so the recommendation process can take up to a 90 seconds.  
-  - On an **M1 Mac**, the predictions typically take around 15 seconds.
+  - Currently deployed on **Firebase** at [https://recsys-41460.web.app/](https://recsys-41460.web.app/).  
+  - When users click “Submit,” the backend route is called (hosted on Google Cloud Run by default).  
+
+- **Local Development**:
+  - Inside the `frontend` folder, install dependencies:
+    ```bash
+    npm install
+    # or
+    yarn install
+    ```
+  - Then run the local dev server:
+    ```bash
+    npm run dev
+    # or
+    yarn dev
+    ```
+  - The app typically spins up at `http://localhost:5173` (depending on your Vite config).
+  - Modify the `fetch` URL in the frontend code (`App.jsx`) if you want to point to a different API endpoint than the deployed one.
+
+---
+
+## Google Run Container
+
+- **Description**: The recommendation API is containerized via Docker and deployed on **Google Cloud Run**. It’s a **CPU-only** service, which can take up to **90 seconds** to generate the predictions for a user with many ratings (especially if the service is cold-starting).
+- **Performance**:
+  - On **Google Cloud Run (CPU only)**: The recommendation computation may take up to 90 seconds if the service is scaling from zero or handling large input.
+  - On an **M1 Mac** (locally, with Docker or direct Python): Predictions typically finish in about **15 seconds** given the same data subset and model.  
+- **Usage**:
+  - The deployed endpoint is invoked by the Vite + React frontend hosted on Firebase.  
+  - You can also call it directly by sending a `POST` request to the Cloud Run URL (as shown in `handleSubmit` in `App.jsx`), passing JSON data of the form:
+    ```json
+    {
+      "user_ratings": [
+        { "movie_id": 123, "rating": 5 },
+        { "movie_id": 456, "rating": 2 },
+        ...
+      ]
+    }
+    ```
+  - The response returns two arrays, `top_10` and `bottom_10`, each containing `[movie_id, predicted_rating]` pairs.
 
 ---
 
 ## Setup and Installation
 
-1. **Clone the Repository**  
-   git clone https://github.com/yourusername/recommender-system.git  
-   cd recommender-system
+1. **Local or Google Colab (Toy Models and Visualization)**
+   - You can download any of the toy model notebooks (SVD, NCF, Two-Tower) or the visualization notebook to run locally or in [Google Colab](https://colab.research.google.com/).  
+   - Make sure you **have the Netflix Prize dataset in your environment** (for instance, in your Google Drive) and **update the paths** at the beginning of each notebook to point to your dataset files.  
+   - These notebooks work best in Colab because the environment already has many of the needed packages installed. If you run locally, you’ll have to install the libraries used in the notebook (e.g., `numpy`, `pandas`, `tensorflow`, etc.)—this may cause version conflicts.  
 
-2. **Install Dependencies**  
-   - **Option A**: Using pip  
-     pip install -r requirements.txt
+2. **Docker Folder / Cloud Run**
+   - The Docker setup (located in the `docker` folder) contains a `Dockerfile` that includes everything needed to build and run a FastAPI service for the trained recommendation model.  
+   - There is **no separate `requirements.txt`** beyond the packages installed in the Docker image. All Python dependencies are defined within that Docker image.  
 
-   - **Option B**: Using conda  
-     conda create -n recsys_env python=3.8  
-     conda activate recsys_env  
-     pip install -r requirements.txt
-
-3. **Acquire Dataset**  
-   - Download the Netflix Prize data from https://www.kaggle.com/datasets/netflix-inc/netflix-prize-data.
-   - Place the extracted files in a `data` folder or update paths in the notebooks accordingly.
-
-4. **Google Colab** (Optional)  
-   - Upload the notebook(s) to your Google Drive or open directly from GitHub.
-   - Make sure to mount your Drive:
-     from google.colab import drive  
-     drive.mount('/content/drive')
-
-   - Update file paths in the notebooks to reference the dataset in your Drive.
+3. **Vite + React Frontend**
+   - The frontend is built using [Vite](https://vitejs.dev/) and React. You can clone the repo, modify the code in the `frontend` folder, and run/build it locally.  
 
 ---
 
 ## Usage
 
-1. **Run the Toy Model Notebooks**  
-   - Open each notebook (SVD, NCF, Two-Tower) inside the `toy_models` folder and run cell by cell.
-   - Ensure that the required Python libraries (listed in `requirements.txt`) are installed.
+You can interact with this project in **three** main ways:
 
-2. **Data Visualization**  
-   - Open the visualization notebook (e.g., `data_visualization.ipynb` in the root directory).
-   - Run the analysis cells to explore data distributions, user ratings, and more.
+1. **Run Toy Model Notebooks or Visualization in Colab (Recommended)**  
+   - Download or open the notebooks (`SVD.ipynb`, `NCF.ipynb`, `TwoTower.ipynb`, and the visualization notebook) in Google Colab.  
+   - Upload your Netflix dataset files (or place them in your Google Drive) and adjust the data path variables in the first cells.  
+   - These notebooks demonstrate the conceptual approaches (toy models) and provide exploratory data analysis.  
+   - There are **two additional notebooks** in `src` (`get_embeddings.ipynb` and `build_model.ipynb`) that build the embeddings and the final CNN-based Two-Tower model. They use a smaller subset of the Netflix data. You can expand their scope, but that’s outside the scope of this readme.
 
-3. **Build and Train the Production Model**  
-   - Inside the `src` folder:
-     - get_embeddings.ipynb: Trains the first Two-Tower model to generate 16D movie embeddings (based on title semantics and release date).
-     - build_model.ipynb: Uses the saved 16D movie embeddings and constructs the CNN-based user tower. This notebook outputs the final model file (.h5 or similar) used in deployment.
+2. **Experiment with the Docker / FastAPI Service**  
+   - Clone the repo and navigate to the `docker` folder.  
+   - Inspect or modify `Dockerfile` and `main.py` to change how the FastAPI service is built or behaves.  
+   - Build the Docker image locally:
+     ```bash
+     docker build -t my_recsys_image .
+     docker run -p 8000:8000 my_recsys_image
+     ```
+   - This sets up the model API locally on port 8000. You can then send POST requests to `http://localhost:8000/recommend` with user ratings to get recommendations.
 
-4. **Docker & FastAPI Deployment**  
-   - The `docker` folder contains:
-     - Dockerfile: Defines the container environment.
-     - main.py: FastAPI application serving the model.
-   - To build and run locally:
-     cd docker  
-     docker build -t your_docker_image_name .  
-     docker run -p 8000:8000 your_docker_image_name
-
-   - Deployed on **Google Cloud Run**. The containerized FastAPI app receives user ratings, runs the model inference, and returns the recommendations.
-
-5. **Frontend**  
-   - Located in the `frontend` folder.
-   - Built with **Vite + React**.  
-   - Deployed to **Firebase** at: https://recsys-41460.web.app/.
-   - When the user rates movies and clicks "Submit," it sends a POST request to the FastAPI endpoint.  
-   - The server returns:
-     - Top 10 highest predicted ratings.
-     - 10 lowest predicted ratings.
-   - The frontend displays these results to the user.
-
-6. **Using the Web App**  
-   - Go to https://recsys-41460.web.app/.
-   - Rate some movies from the list (up to 16 will be used in creating the user embedding).
-   - Click “Submit.”
-   - Wait for the model to process (may take up to a minute on CPU).  
-   - View the recommended highest- and lowest-rated movies.
+3. **Vite + React Frontend**  
+   - Download or clone the repo and navigate to the `frontend` folder.  
+   - Install dependencies (e.g., `npm install` or `yarn install`) and run the development server (`npm run dev` or `yarn dev`).  
+   - This will spin up the frontend locally, which you can connect to your own FastAPI service or the deployed service (if you adjust the fetch URL).  
 
 ---
 
 ## Project Structure
-Below is a representative layout of the project’s files and directories:
+Below is the updated layout of the project’s files and directories:
 
     recommender-system/
     │
-    ├── data/
-    │   └── ... (Netflix Prize data files)
-    │
     ├── toy_models/
-    │   ├── SVD.ipynb
-    │   ├── NCF.ipynb
-    │   └── TwoTower.ipynb
+    │   ├── svd.ipynb
+    │   ├── ncf.ipynb
+    │   └── two_towers.ipynb
     │
     ├── src/
-    │   ├── get_embeddings.ipynb  (generates 16D movie vectors)
-    │   └── build_model.ipynb     (builds CNN-based Two-Tower model)
+    │   ├── get_embeddings.ipynb   (generates 16D movie vectors)
+    │   ├── build_model.ipynb      (builds CNN-based Two-Tower model)
+    │   ├── docker/                (Dockerfile + FastAPI for Cloud Run)
+    │   │   ├── Dockerfile
+    │   │   └── main.py
+    │   └── frontend/              (Vite + React files)
+    │       └── ...
     │
-    ├── docker/
-    │   ├── Dockerfile  (for the FastAPI container)
-    │   └── main.py     (FastAPI API code)
-    │
-    ├── frontend/
-    │   ├── ...         (Vite + React files)
-    │   └── ...
-    │
-    ├── data_visualization.ipynb  (root-level EDA and visualization file)
-    ├── requirements.txt
+    ├── data_visualization.ipynb   (root-level EDA and visualization notebook)
     ├── README.md
     └── LICENSE
 
-- **data/**: Folder for the Netflix Prize data.
 - **toy_models/**: Contains the “toy” notebooks for SVD, NCF, and a simple Two-Tower model.
-- **src/**: Contains the notebooks for generating movie embeddings (get_embeddings.ipynb) and building the final CNN-based Two-Tower model (build_model.ipynb).
-- **docker/**: Holds the Dockerfile and main.py (FastAPI API) for containerization and deployment on Google Cloud Run.
-- **frontend/**: Contains the Vite + React code deployed to Firebase.
-- **data_visualization.ipynb**: A root-level notebook for data exploration and plotting.
-- **requirements.txt**: Python dependencies.
+- **src/**: Holds:
+  - **get_embeddings.ipynb** and **build_model.ipynb** for generating embeddings and creating the final CNN-based Two-Tower model.
+  - **docker/** with the Dockerfile and `main.py` for the FastAPI deployment to Google Cloud Run.
+  - **frontend/** containing the Vite + React web app code.
+- **data_visualization.ipynb**: A root-level notebook for exploratory data analysis and plotting.
+- **README.md**: Project documentation.
 - **LICENSE**: Project license.
 
 ---
